@@ -29,9 +29,10 @@ async def initial_data_fetch():
             existing = {s.ticker for s in result.scalars().all()}
             to_add = [t for t in settings.WATCH_TICKERS if t not in existing]
             if to_add:
+                # Seed default tickers for user_id=1 (first registered user)
                 stmt = pg_insert(Stock).values([
-                    {"ticker": t, "is_active": True} for t in to_add
-                ]).on_conflict_do_nothing(index_elements=["ticker"])
+                    {"ticker": t, "user_id": 1, "is_active": True} for t in to_add
+                ]).on_conflict_do_nothing(index_elements=["user_id", "ticker"])
                 await db.execute(stmt)
                 await db.commit()
                 logger.info("初始化 %d 个默认股票到 watchlist: %s", len(to_add), to_add)

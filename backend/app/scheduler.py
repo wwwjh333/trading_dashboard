@@ -60,11 +60,11 @@ async def job_fetch_news():
 
 
 async def _get_active_tickers() -> list[str]:
-    """Read active watchlist tickers from DB (falls back to config if DB is empty)."""
+    """Return deduplicated active tickers across ALL users (falls back to config if DB is empty)."""
     from app.models.stock import Stock
     from sqlalchemy import select
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(Stock.ticker).where(Stock.is_active == True))  # noqa: E712
+        result = await db.execute(select(Stock.ticker).where(Stock.is_active == True).distinct())  # noqa: E712
         tickers = [row[0] for row in result.fetchall()]
     return tickers or settings.WATCH_TICKERS
 
