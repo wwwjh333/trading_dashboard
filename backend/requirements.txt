@@ -40,3 +40,4 @@ anthropic==0.28.0
 # Utilities
 python-dotenv==1.0.1
 pytz==2024.1
+websockets>=12.0

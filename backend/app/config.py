@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     FRED_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
     BENZINGA_API_KEY: str = ""
+    ALPACA_API_KEY: str = ""
+    ALPACA_API_SECRET: str = ""
+    ALPACA_DATA_FEED: str = "delayed_sip"  # "iex" (real-time free), "delayed_sip" (15-min SIP), "sip" (real-time SIP paid)
 
     JWT_SECRET_KEY: str = "change_this_secret"
     JWT_ALGORITHM: str = "HS256"

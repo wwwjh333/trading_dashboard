@@ -7,7 +7,7 @@ from app.config import settings
 from app.database import create_tables, AsyncSessionLocal
 from app.scheduler import start_scheduler, shutdown_scheduler
 
-from app.api.routes import macro, stocks, news, options, catalysts, trades, auth, industry, baskets
+from app.api.routes import macro, stocks, news, options, catalysts, trades, auth, industry, baskets, ws
 
 logger = logging.getLogger(__name__)
 
@@ -126,6 +126,7 @@ app.include_router(catalysts.router, prefix="/api/catalysts", tags=["catalysts"]
 app.include_router(trades.router, prefix="/api/trades", tags=["trades"])
 app.include_router(industry.router, prefix="/api/industry", tags=["industry"])
 app.include_router(baskets.router, prefix="/api/baskets", tags=["baskets"])
+app.include_router(ws.router, tags=["ws"])
 
 
 @app.get("/health")
