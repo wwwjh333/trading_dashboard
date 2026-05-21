@@ -8,11 +8,9 @@ import StockSearchBox from '../components/layout/StockSearchBox'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
 
-const DATE_RANGES = [30, 60, 90, 180]
-
 export default function StockResearch() {
   const { t } = useTranslation()
-  const { selectedTicker, setSelectedTicker, dateRange, setDateRange } = useGlobalStore()
+  const { selectedTicker, setSelectedTicker } = useGlobalStore()
 
   const { data: stockList } = useStockList()
   const { data: summary } = useStockSummary(selectedTicker)
@@ -22,14 +20,12 @@ export default function StockResearch() {
 
   return (
     <div className="flex gap-4 h-full">
-      {/* ── Left sidebar ── */}
       <aside className="w-44 shrink-0 flex flex-col gap-2">
         <StockSearchBox
           placeholder="搜索代码或公司名…"
           onSelect={(ticker) => setSelectedTicker(ticker)}
         />
 
-        {/* Watchlist — always show full list, not filtered by search */}
         <div className="flex-1 overflow-y-auto space-y-0.5 max-h-[calc(100vh-220px)]">
           {tickers.map((ticker) => (
             <button
@@ -51,7 +47,6 @@ export default function StockResearch() {
         </div>
       </aside>
 
-      {/* ── Main content ── */}
       <div className="flex-1 min-w-0 space-y-4">
         <div className="card">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -85,39 +80,22 @@ export default function StockResearch() {
                   </p>
                 </div>
               )}
-              <div className="flex gap-1 border-l border-surface-600 pl-4">
-                {DATE_RANGES.map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDateRange(d)}
-                    className={clsx('px-2 py-1 rounded text-xs border transition-colors', {
-                      'bg-surface-600 text-gray-200 border-surface-500': dateRange === d,
-                      'text-gray-500 border-transparent hover:border-surface-600 hover:text-gray-400': dateRange !== d,
-                    })}
-                  >
-                    {d}{t('common.days')}
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="card !p-0 overflow-hidden">
-              <TradingViewChart ticker={selectedTicker} days={dateRange} />
-            </div>
-          </div>
+        {/* Full-width chart — time range via TradingView toolbar */}
+        <div className="card !p-0 overflow-hidden">
+          <TradingViewChart ticker={selectedTicker} />
+        </div>
 
-          <div className="space-y-4">
-            <OptionsCard ticker={selectedTicker} />
-            <div className="card">
-              <h3 className="text-sm font-medium mb-3">{t('research.relatedNews')}</h3>
-              <div className="space-y-2">
-                {(news ?? []).slice(0, 8).map((n) => <NewsCard key={n.id} item={n} />)}
-                {!news?.length && <p className="text-gray-500 text-sm">{t('common.noData')}</p>}
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <OptionsCard ticker={selectedTicker} />
+          <div className="card">
+            <h3 className="text-sm font-medium mb-3">{t('research.relatedNews')}</h3>
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {(news ?? []).slice(0, 8).map((n) => <NewsCard key={n.id} item={n} />)}
+              {!news?.length && <p className="text-gray-500 text-sm">{t('common.noData')}</p>}
             </div>
           </div>
         </div>
