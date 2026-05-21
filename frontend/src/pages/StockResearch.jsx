@@ -1,5 +1,6 @@
 import { useGlobalStore } from '../store/globalStore'
 import { useStockList, useStockSummary } from '../hooks/useStock'
+import { useLivePrice } from '../hooks/useLivePrice'
 import { useNews } from '../hooks/useNews'
 import TradingViewChart from '../components/charts/TradingViewChart'
 import OptionsCard from '../components/cards/OptionsCard'
@@ -14,6 +15,7 @@ export default function StockResearch() {
 
   const { data: stockList } = useStockList()
   const { data: summary } = useStockSummary(selectedTicker)
+  const quote = useLivePrice(selectedTicker, summary)
   const { data: news } = useNews(selectedTicker, 20)
 
   const tickers = (stockList ?? []).map((s) => s.ticker)
@@ -57,12 +59,19 @@ export default function StockResearch() {
               )}
             </div>
             <div className="flex items-center gap-4 shrink-0">
-              {summary?.latest_price && (
-                <span className="text-2xl font-medium">${parseFloat(summary.latest_price).toFixed(2)}</span>
+              {quote?.price != null && (
+                <span className="text-2xl font-medium flex items-center gap-2">
+                  ${quote.price.toFixed(2)}
+                  {quote.isLive && (
+                    <span className="text-[10px] font-normal uppercase tracking-wide text-accent-green border border-accent-green/40 rounded px-1 py-0.5">
+                      Live
+                    </span>
+                  )}
+                </span>
               )}
-              {summary?.price_change_pct != null && (
-                <span className={`text-lg font-medium ${summary.price_change_pct >= 0 ? 'positive' : 'negative'}`}>
-                  {summary.price_change_pct >= 0 ? '+' : ''}{summary.price_change_pct.toFixed(2)}%
+              {quote?.changePct != null && (
+                <span className={`text-lg font-medium ${quote.changePct >= 0 ? 'positive' : 'negative'}`}>
+                  {quote.changePct >= 0 ? '+' : ''}{quote.changePct.toFixed(2)}%
                 </span>
               )}
               {summary?.rsi_14 && (
