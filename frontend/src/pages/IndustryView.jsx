@@ -98,7 +98,11 @@ const TICKER_LAYER = {}
 LAYERS.forEach((l) => l.allTickers.forEach((t) => { TICKER_LAYER[t] = l.id }))
 
 const LAYER_NAME = {}
-LAYERS.forEach((l) => { LAYER_NAME[l.id] = l.name })
+const LAYER_NAME_EN = {}
+LAYERS.forEach((l) => {
+  LAYER_NAME[l.id] = l.name
+  LAYER_NAME_EN[l.id] = l.nameEn
+})
 
 // ── 热力色计算 ────────────────────────────────────────────────
 function heatConfig(pct) {
@@ -281,7 +285,8 @@ function PropagationBlock({ layerData, i18n }) {
 }
 
 // ── 催化剂区块 ────────────────────────────────────────────────
-function CatalystBlock({ i18n }) {
+function CatalystBlock() {
+  const { t, i18n } = useTranslation()
   const { data: catalysts } = useQuery({
     queryKey: ['catalysts', 'upcoming', 14],
     queryFn: () => catalystsApi.getUpcoming(14),
@@ -300,32 +305,30 @@ function CatalystBlock({ i18n }) {
       .slice(0, 3)
   }, [catalysts])
 
-  const label = (t, i18n) => {
-    const days = dayjs(t).diff(dayjs(), 'day')
-    if (days === 0) return i18n.language === 'zh' ? '今日' : 'Today'
-    if (days === 1) return i18n.language === 'zh' ? '明日' : 'Tomorrow'
-    return i18n.language === 'zh' ? `${days}天后` : `In ${days}d`
+  const dateLabel = (dateStr) => {
+    const days = dayjs(dateStr).diff(dayjs(), 'day')
+    if (days === 0) return t('common.today')
+    if (days === 1) return t('common.tomorrow')
+    return t('common.daysLater', { count: days })
   }
 
   if (!relevant.length) return null
 
   return (
     <div className="card space-y-1">
-      <h2 className="section-title mb-3">
-        {i18n.language === 'zh' ? '近期催化剂' : 'Upcoming Catalysts'}
-      </h2>
+      <h2 className="section-title mb-3">{t('industry.upcomingCatalysts')}</h2>
       {relevant.map((c) => (
         <div
           key={c.id}
           className="flex items-center gap-3 py-2 border-b border-surface-600 last:border-0 text-sm"
         >
           <span className="w-12 text-xs font-mono text-accent-yellow flex-shrink-0">
-            {label(c.event_date, i18n)}
+            {dateLabel(c.event_date)}
           </span>
           <span className="flex-1 text-gray-200 truncate">{c.event_name}</span>
           {c.layer && (
             <span className="text-xs text-gray-500 flex-shrink-0 bg-surface-700 px-2 py-0.5 rounded border border-surface-600">
-              {i18n.language === 'zh' ? LAYER_NAME[c.layer] : c.layer}
+              {i18n.language === 'en' ? LAYER_NAME_EN[c.layer] : LAYER_NAME[c.layer]}
             </span>
           )}
         </div>
@@ -338,7 +341,7 @@ function CatalystBlock({ i18n }) {
 const ALL_TICKERS = [...new Set(LAYERS.flatMap((l) => l.allTickers))]
 
 export default function IndustryView() {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [expandedLayer, setExpandedLayer] = useState(null)
   const { map: summaryMap, isLoading } = useMultiStockSummary(ALL_TICKERS)
 

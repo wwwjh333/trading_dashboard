@@ -1,9 +1,12 @@
-import { useEffect, useRef, memo } from 'react'
+import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useThemeStore } from '../../store/globalStore'
+import { getTradingViewLocale } from '../../i18n/index'
 
 const CHART_HEIGHT = 680
+const TV_SCRIPT = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
 
-function buildWidgetConfig(ticker, theme) {
+function buildWidgetConfig(ticker, theme, locale) {
   return {
     autosize: true,
     symbol: ticker,
@@ -11,18 +14,15 @@ function buildWidgetConfig(ticker, theme) {
     timezone: 'America/New_York',
     theme: theme === 'light' ? 'light' : 'dark',
     style: '1',
-    locale: 'zh_CN',
+    locale,
     enable_publishing: false,
     allow_symbol_change: false,
     calendar: false,
     support_host: 'https://www.tradingview.com',
-    // 顶部工具栏：周期(1m/5m/1D…)、K线类型、指标
     hide_top_toolbar: false,
-    // 左侧画线工具
     hide_side_toolbar: false,
     hide_legend: false,
     save_image: false,
-    // 底部日期范围：1D / 5D / 1M / 3M / 6M / YTD / 1Y / 5Y / All
     withdateranges: true,
     range: '6M',
     details: false,
@@ -34,12 +34,14 @@ function buildWidgetConfig(ticker, theme) {
 function TradingViewChart({ ticker }) {
   const containerRef = useRef(null)
   const { theme } = useThemeStore()
+  const { i18n } = useTranslation()
+  const tvLocale = getTradingViewLocale(i18n.language)
 
   useEffect(() => {
     const el = containerRef.current
     if (!ticker || !el) return
 
-    el.innerHTML = ''
+    el.replaceChildren()
 
     const wrapper = document.createElement('div')
     wrapper.className = 'tradingview-widget-container'
@@ -53,16 +55,17 @@ function TradingViewChart({ ticker }) {
 
     const script = document.createElement('script')
     script.type = 'text/javascript'
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
+    // cache-bust so locale/theme changes always reload the embed
+    script.src = `${TV_SCRIPT}?_=${Date.now()}`
     script.async = true
-    script.innerHTML = JSON.stringify(buildWidgetConfig(ticker, theme))
+    script.innerHTML = JSON.stringify(buildWidgetConfig(ticker, theme, tvLocale))
 
     wrapper.appendChild(widget)
     wrapper.appendChild(script)
     el.appendChild(wrapper)
 
-    return () => { el.innerHTML = '' }
-  }, [ticker, theme])
+    return () => { el.replaceChildren() }
+  }, [ticker, theme, tvLocale, i18n.language])
 
   return (
     <div
@@ -73,4 +76,4 @@ function TradingViewChart({ ticker }) {
   )
 }
 
-export default memo(TradingViewChart)
+export default TradingViewChart

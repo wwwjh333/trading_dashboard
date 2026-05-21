@@ -21,4 +21,10 @@ export function setLanguage(lang) {
   localStorage.setItem(STORAGE_KEY, lang)
 }
 
+/** Map app language (zh/en) to TradingView widget locale */
+export function getTradingViewLocale(lang) {
+  if (!lang || lang.startsWith('zh')) return 'zh_CN'
+  return 'en'
+}
+
 export default i18n

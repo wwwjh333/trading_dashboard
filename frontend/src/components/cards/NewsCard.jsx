@@ -1,16 +1,23 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
+import 'dayjs/locale/en'
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 dayjs.extend(relativeTime)
-dayjs.locale('zh-cn')
-
-const SENTIMENT_LABELS = { bullish: '↑ 看多', bearish: '↓ 看空', neutral: '→ 中性' }
-const IMPACT_LABELS    = { high: '重要', medium: '中等', low: '一般' }
 
 export default function NewsCard({ item }) {
+  const { t, i18n } = useTranslation()
   const sentiment = item.sentiment
-  const impact    = item.impact_level
+  const impact = item.impact_level
+
+  useEffect(() => {
+    dayjs.locale(i18n.language === 'zh' ? 'zh-cn' : 'en')
+  }, [i18n.language])
+
+  const sentimentLabel = t(`newsCard.${sentiment ?? 'neutral'}`, { defaultValue: t('newsCard.neutral') })
+  const impactLabel = t(`newsCard.${impact ?? 'low'}`, { defaultValue: t('newsCard.low') })
 
   return (
     <div className="card hover:shadow-card-md group transition-all cursor-default">
@@ -34,8 +41,8 @@ export default function NewsCard({ item }) {
           )}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className={`badge-${sentiment ?? 'neutral'}`}>{SENTIMENT_LABELS[sentiment] ?? '→ 中性'}</span>
-          <span className={`badge-${impact ?? 'low'}`}>{IMPACT_LABELS[impact] ?? '一般'}</span>
+          <span className={`badge-${sentiment ?? 'neutral'}`}>{sentimentLabel}</span>
+          <span className={`badge-${impact ?? 'low'}`}>{impactLabel}</span>
         </div>
       </div>
       <div className="flex items-center gap-3 mt-2.5 pt-2 border-t border-surface-600 text-xs text-gray-500">

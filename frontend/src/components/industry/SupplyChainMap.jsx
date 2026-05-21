@@ -2,12 +2,6 @@ import { useTranslation } from 'react-i18next'
 import clsx from 'clsx'
 
 const LAYER_ORDER = ['cloud', 'chips', 'materials', 'equipment']
-const LAYER_LABELS = {
-  cloud:     '云厂商 / 终端客户',
-  chips:     '芯片设计',
-  materials: '晶圆代工',
-  equipment: '设备制造',
-}
 
 export default function SupplyChainMap({ nodes, priceMap = {} }) {
   const { t } = useTranslation()
@@ -27,7 +21,7 @@ export default function SupplyChainMap({ nodes, priceMap = {} }) {
     <div className="space-y-4">
       {LAYER_ORDER.filter((l) => byLayer[l]).map((layer) => (
         <div key={layer}>
-          <p className="text-xs text-gray-500 mb-2">{LAYER_LABELS[layer] ?? layer}</p>
+          <p className="text-xs text-gray-500 mb-2">{t(`industry.layers.${layer}`, { defaultValue: layer })}</p>
           <div className="flex flex-wrap gap-2">
             {byLayer[layer].map((node) => {
               const price = priceMap[node.ticker]

@@ -9,7 +9,7 @@ import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
 
 export default function StockResearch() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { selectedTicker, setSelectedTicker } = useGlobalStore()
 
   const { data: stockList } = useStockList()
@@ -21,10 +21,7 @@ export default function StockResearch() {
   return (
     <div className="flex gap-4 h-full">
       <aside className="w-44 shrink-0 flex flex-col gap-2">
-        <StockSearchBox
-          placeholder="搜索代码或公司名…"
-          onSelect={(ticker) => setSelectedTicker(ticker)}
-        />
+        <StockSearchBox onSelect={(ticker) => setSelectedTicker(ticker)} />
 
         <div className="flex-1 overflow-y-auto space-y-0.5 max-h-[calc(100vh-220px)]">
           {tickers.map((ticker) => (
@@ -42,7 +39,7 @@ export default function StockResearch() {
             </button>
           ))}
           {tickers.length === 0 && (
-            <p className="text-gray-600 text-xs text-center py-3">暂无自选股</p>
+            <p className="text-gray-600 text-xs text-center py-3">{t('research.emptyWatchlist')}</p>
           )}
         </div>
       </aside>
@@ -86,7 +83,7 @@ export default function StockResearch() {
 
         {/* Full-width chart — time range via TradingView toolbar */}
         <div className="card !p-0 overflow-hidden">
-          <TradingViewChart ticker={selectedTicker} />
+          <TradingViewChart key={`${selectedTicker}-${i18n.language}`} ticker={selectedTicker} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

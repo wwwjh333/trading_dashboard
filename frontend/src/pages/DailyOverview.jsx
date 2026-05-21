@@ -146,7 +146,7 @@ export default function DailyOverview() {
                   'text-gray-400 border-surface-600 hover:text-gray-200 hover:border-surface-500': newsFilter !== tag,
                 })}
               >
-                {tag === 'all' ? '全部' : tag}
+                {tag === 'all' ? t('overview.filterAll') : tag}
               </button>
             ))}
           </div>
@@ -157,7 +157,7 @@ export default function DailyOverview() {
           <div className="space-y-2">
             {recentNews.length > 0
               ? recentNews.map((n) => <NewsCard key={n.id} item={n} />)
-              : <p className="text-gray-500 text-sm py-4 text-center">该分类暂无新闻</p>
+              : <p className="text-gray-500 text-sm py-4 text-center">{t('overview.noNewsInCategory')}</p>
             }
           </div>
         )}

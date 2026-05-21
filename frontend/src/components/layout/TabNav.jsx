@@ -93,7 +93,7 @@ export default function TabNav() {
         <button
           onClick={toggleLang}
           className="btn-ghost text-xs py-1.5 px-2 font-semibold tabular-nums"
-          title="切换语言 / Switch language"
+          title={t('common.switchLanguage')}
         >
           {i18n.language === 'zh' ? 'EN' : '中'}
         </button>
@@ -102,7 +102,7 @@ export default function TabNav() {
         <button
           onClick={toggleTheme}
           className="btn-ghost py-1.5 px-2"
-          title={theme === 'dark' ? '切换浅色模式' : 'Switch to dark mode'}
+          title={theme === 'dark' ? t('common.switchLightMode') : t('common.switchDarkMode')}
           aria-label="Toggle theme"
         >
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
@@ -115,7 +115,7 @@ export default function TabNav() {
         <button
           onClick={clearAuth}
           className="btn-ghost text-xs py-1.5 px-2 text-gray-500"
-          title={i18n.language === 'zh' ? '退出登录' : 'Sign out'}
+          title={t('common.signOut')}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>

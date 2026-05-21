@@ -61,14 +61,14 @@ export default function WatchlistManager({ onClose }) {
 
       {/* Fuzzy search — click result to add directly */}
       <StockSearchBox
-        placeholder="搜索并添加，如 QQQM / Nvidia"
+        placeholder={t('search.addPlaceholder')}
         onSelect={(ticker) => addTicker(ticker)}
         inputClassName="input-field py-1.5 text-xs w-full"
       />
 
       <div className="flex items-center gap-2 text-xs text-gray-600">
         <span className="flex-1 border-t border-surface-600" />
-        <span>或直接输入代码</span>
+        <span>{t('search.orEnterTicker')}</span>
         <span className="flex-1 border-t border-surface-600" />
       </div>
 
@@ -88,7 +88,7 @@ export default function WatchlistManager({ onClose }) {
       {error && <p className="text-accent-red text-xs">{error}</p>}
       {addedTicker && (
         <p className="text-accent-green text-xs">
-          ✓ {addedTicker} 已添加，正在后台抓取数据，约 30 秒后可见
+          {t('search.addedPending', { ticker: addedTicker })}
         </p>
       )}
 

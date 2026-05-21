@@ -1,40 +1,42 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useTrades } from '../hooks/useTrades'
 import TradeForm from '../components/journal/TradeForm'
 import TradeList from '../components/journal/TradeList'
 import TradeStats from '../components/journal/TradeStats'
 
 export default function Journal() {
+  const { t } = useTranslation()
   const [showForm, setShowForm] = useState(false)
   const { data: trades, isLoading } = useTrades()
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-medium">交易日志</h1>
+        <h1 className="text-lg font-medium">{t('trades.title')}</h1>
         <button
           onClick={() => setShowForm(!showForm)}
           className="btn-primary"
         >
-          {showForm ? '收起表单' : '+ 记录新交易'}
+          {showForm ? t('trades.hideForm') : t('trades.newTrade')}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h2 className="text-sm font-medium mb-4">新建交易记录</h2>
+          <h2 className="text-sm font-medium mb-4">{t('trades.newRecord')}</h2>
           <TradeForm onClose={() => setShowForm(false)} />
         </div>
       )}
 
       <section>
-        <h2 className="text-xs text-gray-500 uppercase tracking-wider mb-3">统计概览</h2>
+        <h2 className="text-xs text-gray-500 uppercase tracking-wider mb-3">{t('trades.statsOverview')}</h2>
         <TradeStats />
       </section>
 
       <section>
         <h2 className="text-xs text-gray-500 uppercase tracking-wider mb-3">
-          交易记录
+          {t('trades.tradeRecords')}
           {trades && <span className="ml-2 text-gray-600">({trades.length})</span>}
         </h2>
         {isLoading ? (

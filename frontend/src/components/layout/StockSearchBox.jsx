@@ -1,18 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { stocksApi } from '../../api/index'
 import clsx from 'clsx'
 
-/**
- * Debounced Yahoo stock search with dropdown.
- * onSelect(ticker, item) — user picked a result
- */
 export default function StockSearchBox({
-  placeholder = '搜索代码或公司名…',
+  placeholder,
   onSelect,
   className = '',
   inputClassName = 'input-field py-1.5 text-xs w-full',
   clearOnSelect = true,
 }) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [open, setOpen] = useState(false)
@@ -21,6 +19,8 @@ export default function StockSearchBox({
   const wrapRef = useRef(null)
   const debounceRef = useRef(null)
   const reqIdRef = useRef(0)
+
+  const inputPlaceholder = placeholder ?? t('research.searchPlaceholder')
 
   useEffect(() => {
     const q = query.trim()
@@ -77,17 +77,17 @@ export default function StockSearchBox({
         value={query}
         onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
         onFocus={() => setOpen(true)}
-        placeholder={placeholder}
+        placeholder={inputPlaceholder}
         className={inputClassName}
         autoComplete="off"
       />
       {showPanel && (
         <div className="absolute top-full left-0 right-0 mt-0.5 bg-surface-800 border border-surface-600 rounded-lg shadow-xl z-[60] max-h-56 overflow-y-auto min-w-[220px]">
           {loading && (
-            <div className="px-3 py-2.5 text-xs text-gray-500">搜索中…</div>
+            <div className="px-3 py-2.5 text-xs text-gray-500">{t('search.searching')}</div>
           )}
           {!loading && searched && results.length === 0 && (
-            <div className="px-3 py-2.5 text-xs text-gray-500">未找到匹配股票</div>
+            <div className="px-3 py-2.5 text-xs text-gray-500">{t('search.noResults')}</div>
           )}
           {!loading && results.map((r) => (
             <button

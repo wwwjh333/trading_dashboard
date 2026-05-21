@@ -23,7 +23,7 @@ export default function Login() {
       const data = await fn(username, password)
       setAuth(data.access_token, data.user_id, data.username)
     } catch (err) {
-      setError(err.response?.data?.detail ?? '操作失败，请重试')
+      setError(err.response?.data?.detail ?? t('common.operationFailed'))
     } finally {
       setLoading(false)
     }

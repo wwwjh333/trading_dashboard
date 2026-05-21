@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
 import { useDeleteTrade, useUpdateTrade } from '../../hooks/useTrades'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
 
 function ExitForm({ trade, onClose }) {
+  const { t } = useTranslation()
   const update = useUpdateTrade()
   const { register, handleSubmit, formState: { isSubmitting } } = useForm()
 
@@ -26,24 +28,24 @@ function ExitForm({ trade, onClose }) {
     <form onSubmit={handleSubmit(onSubmit)} className="mt-3 space-y-3 border-t border-surface-600 pt-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-gray-400 block mb-1">出场日期</label>
+          <label className="text-xs text-gray-400 block mb-1">{t('trades.exitDate')}</label>
           <input type="date" {...register('exit_date', { required: true })} className="input-field" />
         </div>
         <div>
-          <label className="text-xs text-gray-400 block mb-1">出场价格</label>
+          <label className="text-xs text-gray-400 block mb-1">{t('trades.exitPrice')}</label>
           <input type="number" step="0.01" {...register('exit_price', { required: true })} className="input-field" />
         </div>
       </div>
       <div>
-        <label className="text-xs text-gray-400 block mb-1">复盘笔记</label>
+        <label className="text-xs text-gray-400 block mb-1">{t('trades.outcomeNotes')}</label>
         <textarea {...register('outcome_notes')} rows={2} className="input-field resize-none text-xs" />
       </div>
       <div>
-        <label className="text-xs text-gray-400 block mb-1">经验教训</label>
+        <label className="text-xs text-gray-400 block mb-1">{t('trades.lesson')}</label>
         <input {...register('lesson')} className="input-field" />
       </div>
       <div>
-        <label className="text-xs text-gray-400 block mb-1">决策质量评分 (1-5)</label>
+        <label className="text-xs text-gray-400 block mb-1">{t('trades.ratingLabel')}</label>
         <select {...register('rating')} className="input-field w-24">
           <option value="">—</option>
           {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
@@ -51,15 +53,16 @@ function ExitForm({ trade, onClose }) {
       </div>
       <div className="flex gap-2">
         <button type="submit" disabled={isSubmitting} className="btn-primary text-xs py-1">
-          {isSubmitting ? '保存中…' : '记录出场'}
+          {isSubmitting ? t('common.saving') : t('trades.recordExit')}
         </button>
-        <button type="button" onClick={onClose} className="btn-secondary text-xs py-1">取消</button>
+        <button type="button" onClick={onClose} className="btn-secondary text-xs py-1">{t('common.cancel')}</button>
       </div>
     </form>
   )
 }
 
 function TradeRow({ trade }) {
+  const { t } = useTranslation()
   const [showExit, setShowExit] = useState(false)
   const deleteTrade = useDeleteTrade()
   const isClosed = trade.exit_date != null
@@ -76,11 +79,16 @@ function TradeRow({ trade }) {
             'text-accent-green border-green-800 bg-green-900/30': trade.direction === 'long',
             'text-accent-red border-red-800 bg-red-900/30': trade.direction === 'short',
           })}>
-            {trade.direction}
+            {trade.direction === 'long' ? t('trades.long') : t('trades.short')}
           </span>
-          <span className="text-xs text-gray-400">{trade.instrument}</span>
+          <span className="text-xs text-gray-400">
+            {trade.instrument === 'stock' ? t('trades.stock') :
+             trade.instrument === 'call' ? t('trades.call') : t('trades.put')}
+          </span>
           {trade.catalyst_type && (
-            <span className="text-xs text-accent-yellow">{trade.catalyst_type}</span>
+            <span className="text-xs text-accent-yellow">
+              {t(`trades.${trade.catalyst_type}`, { defaultValue: trade.catalyst_type })}
+            </span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -91,16 +99,16 @@ function TradeRow({ trade }) {
             </span>
           )}
           <span className={clsx('text-xs px-2 py-0.5 rounded-full', isClosed ? 'bg-surface-600 text-gray-400' : 'bg-blue-900/30 text-accent-blue border border-blue-800')}>
-            {isClosed ? '已平仓' : '持仓中'}
+            {isClosed ? t('trades.closed') : t('trades.open')}
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-4 gap-2 text-xs text-gray-400">
-        <span>进场: {dayjs(trade.entry_date).format('MM/DD')} @ ${parseFloat(trade.entry_price).toFixed(2)}</span>
-        {isClosed && <span>出场: {dayjs(trade.exit_date).format('MM/DD')} @ ${parseFloat(trade.exit_price).toFixed(2)}</span>}
-        <span>仓位: {trade.position_size}</span>
-        {trade.rating && <span>评分: {'⭐'.repeat(trade.rating)}</span>}
+        <span>{t('trades.entry')}: {dayjs(trade.entry_date).format('MM/DD')} @ ${parseFloat(trade.entry_price).toFixed(2)}</span>
+        {isClosed && <span>{t('trades.exit')}: {dayjs(trade.exit_date).format('MM/DD')} @ ${parseFloat(trade.exit_price).toFixed(2)}</span>}
+        <span>{t('trades.position')}: {trade.position_size}</span>
+        {trade.rating && <span>{t('trades.ratingShort')}: {'⭐'.repeat(trade.rating)}</span>}
       </div>
 
       <p className="text-xs text-gray-300 line-clamp-2">{trade.thesis}</p>
@@ -116,7 +124,7 @@ function TradeRow({ trade }) {
       {!isClosed && (
         <div>
           <button onClick={() => setShowExit(!showExit)} className="text-xs text-accent-blue hover:underline">
-            {showExit ? '收起' : '记录出场'}
+            {showExit ? t('common.collapse') : t('trades.recordExit')}
           </button>
           {showExit && <ExitForm trade={trade} onClose={() => setShowExit(false)} />}
         </div>
@@ -124,10 +132,10 @@ function TradeRow({ trade }) {
 
       <div className="flex justify-end">
         <button
-          onClick={() => { if (confirm('确认删除此交易记录？')) deleteTrade.mutate(trade.id) }}
+          onClick={() => { if (confirm(t('trades.confirmDelete'))) deleteTrade.mutate(trade.id) }}
           className="text-xs text-gray-600 hover:text-accent-red"
         >
-          删除
+          {t('common.delete')}
         </button>
       </div>
     </div>
@@ -135,18 +143,25 @@ function TradeRow({ trade }) {
 }
 
 export default function TradeList({ trades = [] }) {
+  const { t } = useTranslation()
   const [filter, setFilter] = useState('all')
 
-  const filtered = trades.filter((t) => {
-    if (filter === 'open') return !t.exit_date
-    if (filter === 'closed') return !!t.exit_date
+  const filtered = trades.filter((tr) => {
+    if (filter === 'open') return !tr.exit_date
+    if (filter === 'closed') return !!tr.exit_date
     return true
   })
+
+  const FILTER_OPTIONS = [
+    ['all', t('common.all')],
+    ['open', t('trades.open')],
+    ['closed', t('trades.closed')],
+  ]
 
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
-        {[['all', '全部'], ['open', '持仓中'], ['closed', '已平仓']].map(([v, l]) => (
+        {FILTER_OPTIONS.map(([v, l]) => (
           <button
             key={v}
             onClick={() => setFilter(v)}
@@ -160,9 +175,9 @@ export default function TradeList({ trades = [] }) {
         ))}
       </div>
       {filtered.length === 0 ? (
-        <div className="text-gray-500 text-sm text-center py-8">暂无交易记录</div>
+        <div className="text-gray-500 text-sm text-center py-8">{t('trades.noTrades')}</div>
       ) : (
-        filtered.map((t) => <TradeRow key={t.id} trade={t} />)
+        filtered.map((tr) => <TradeRow key={tr.id} trade={tr} />)
       )}
     </div>
   )

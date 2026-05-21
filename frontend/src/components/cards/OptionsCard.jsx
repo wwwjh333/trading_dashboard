@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { optionsApi } from '../../api/index'
 import dayjs from 'dayjs'
 
@@ -19,6 +20,7 @@ function IVMeter({ value, label }) {
 }
 
 export default function OptionsCard({ ticker }) {
+  const { t } = useTranslation()
   const { data, isLoading, isError } = useQuery({
     queryKey: ['options', ticker],
     queryFn: () => optionsApi.getSnapshot(ticker),
@@ -29,7 +31,7 @@ export default function OptionsCard({ ticker }) {
   if (isLoading) return <div className="card animate-pulse h-32" />
   if (isError || !data?.length) {
     return (
-      <div className="card text-gray-500 text-sm">暂无期权数据</div>
+      <div className="card text-gray-500 text-sm">{t('options.noData')}</div>
     )
   }
 
@@ -38,8 +40,8 @@ export default function OptionsCard({ ticker }) {
   return (
     <div className="card space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">期权数据</h3>
-        <span className="text-xs text-gray-500">到期: {dayjs(first.expiry_date).format('MM/DD')}</span>
+        <h3 className="text-sm font-medium">{t('options.title')}</h3>
+        <span className="text-xs text-gray-500">{t('options.expiry')}: {dayjs(first.expiry_date).format('MM/DD')}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -50,7 +52,7 @@ export default function OptionsCard({ ticker }) {
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-400">隐含波动</p>
+          <p className="text-xs text-gray-400">{t('options.impliedMove')}</p>
           <p className="text-lg font-medium text-accent-yellow">
             {first.implied_move ? `±${(first.implied_move).toFixed(1)}%` : '—'}
           </p>
@@ -71,7 +73,7 @@ export default function OptionsCard({ ticker }) {
 
       {data.length > 1 && (
         <div className="border-t border-surface-600 pt-2 text-xs text-gray-500">
-          次近到期: {dayjs(data[1].expiry_date).format('MM/DD')}
+          {t('options.nextExpiry')}: {dayjs(data[1].expiry_date).format('MM/DD')}
           {data[1].iv_atm && ` · IV ${(data[1].iv_atm * 100).toFixed(1)}%`}
         </div>
       )}

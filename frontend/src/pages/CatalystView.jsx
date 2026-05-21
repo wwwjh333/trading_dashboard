@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { catalystsApi } from '../api/index'
 import CatalystCard from '../components/cards/CatalystCard'
 import dayjs from 'dayjs'
@@ -23,6 +24,7 @@ function WeekGroup({ label, items }) {
 }
 
 export default function CatalystView() {
+  const { t } = useTranslation()
   const [typeFilter, setTypeFilter] = useState('all')
   const [days, setDays] = useState(60)
 
@@ -45,7 +47,7 @@ export default function CatalystView() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-lg font-medium">催化剂日历</h1>
+        <h1 className="text-lg font-medium">{t('catalyst.title')}</h1>
         <div className="flex gap-1">
           {[28, 60, 90].map((d) => (
             <button
@@ -56,24 +58,23 @@ export default function CatalystView() {
                 'text-gray-500 border-transparent hover:text-gray-300': days !== d,
               })}
             >
-              {d}天
+              {t('common.daysCount', { count: d })}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Type filter */}
       <div className="flex gap-2 flex-wrap">
-        {TYPE_FILTERS.map((t) => (
+        {TYPE_FILTERS.map((type) => (
           <button
-            key={t}
-            onClick={() => setTypeFilter(t)}
+            key={type}
+            onClick={() => setTypeFilter(type)}
             className={clsx('px-3 py-1.5 rounded-md text-xs border', {
-              'bg-accent-blue text-surface-900 border-accent-blue': typeFilter === t,
-              'bg-surface-700 text-gray-400 border-surface-600': typeFilter !== t,
+              'bg-accent-blue text-surface-900 border-accent-blue': typeFilter === type,
+              'bg-surface-700 text-gray-400 border-surface-600': typeFilter !== type,
             })}
           >
-            {t === 'all' ? '全部' : t}
+            {type === 'all' ? t('common.all') : t(`catalyst.types.${type}`)}
           </button>
         ))}
       </div>
@@ -82,14 +83,14 @@ export default function CatalystView() {
         <div className="space-y-2">{[...Array(6)].map((_, i) => <div key={i} className="card h-24 animate-pulse" />)}</div>
       ) : (
         <div className="space-y-6">
-          <WeekGroup label="本周 (7天内)" items={week1} />
-          <WeekGroup label="第2周 (8-14天)" items={week2} />
-          <WeekGroup label="更远期" items={beyond} />
-          <WeekGroup label="近30天已发生" items={[...past].reverse()} />
+          <WeekGroup label={t('catalyst.week1')} items={week1} />
+          <WeekGroup label={t('catalyst.week2')} items={week2} />
+          <WeekGroup label={t('catalyst.beyond')} items={beyond} />
+          <WeekGroup label={t('catalyst.past30')} items={[...past].reverse()} />
           {filtered.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              <p>未来 {days} 天内无催化剂事件</p>
-              <p className="text-xs mt-1">可切换至 60天 或 90天 查看更多</p>
+              <p>{t('catalyst.emptyFuture', { days })}</p>
+              <p className="text-xs mt-1">{t('catalyst.emptyHint')}</p>
             </div>
           )}
         </div>
