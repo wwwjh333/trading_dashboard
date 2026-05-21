@@ -3,6 +3,7 @@ import logging
 from datetime import date, timedelta
 from typing import List
 
+import httpx
 import yfinance as yf
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,6 +24,39 @@ from app.data.processors.llm_processor import process_news_batch
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+# ── Stock search ─────────────────────────────────────────────────────────────
+
+@router.get("/search")
+async def search_stocks(
+    q: str = Query(..., min_length=1, max_length=30),
+    _: User = Depends(get_current_user),
+):
+    """Fuzzy search via Yahoo Finance — returns list of {ticker, name, exchange, type}."""
+    url = "https://query1.finance.yahoo.com/v1/finance/search"
+    params = {"q": q, "quotesCount": 10, "newsCount": 0, "listsCount": 0}
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            r = await client.get(url, params=params, headers=headers)
+            r.raise_for_status()
+            data = r.json()
+        quotes = data.get("quotes", [])
+        results = [
+            {
+                "ticker":   q.get("symbol", ""),
+                "name":     q.get("longname") or q.get("shortname") or "",
+                "exchange": q.get("exchange", ""),
+                "type":     q.get("quoteType", ""),
+            }
+            for q in quotes
+            if q.get("symbol") and q.get("quoteType") in ("EQUITY", "ETF", "INDEX")
+        ]
+        return results
+    except Exception as exc:
+        logger.error("Stock search failed for %r: %s", q, exc)
+        return []
 
 
 # ── yfinance validation ───────────────────────────────────────────────────────

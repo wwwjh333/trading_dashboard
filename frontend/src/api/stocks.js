@@ -8,4 +8,5 @@ export const stocksApi = {
     client.get(`/stocks/${ticker}/summary`).then((r) => r.data),
   addStock: (data) => client.post('/stocks', data).then((r) => r.data),
   removeStock: (ticker) => client.delete(`/stocks/${ticker}`),
+  search: (q) => client.get('/stocks/search', { params: { q } }).then((r) => r.data),
 }
