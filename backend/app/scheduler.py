@@ -59,15 +59,24 @@ async def job_fetch_news():
             logger.error("LLM processing failed: %s", exc)
 
 
-async def job_fetch_options():
-    from app.data.fetchers.options_fetcher import fetch_and_store_options
-    from app.data.fetchers.market_utils import is_market_hours
+async def _get_active_tickers() -> list[str]:
+    """Read active watchlist tickers from DB (falls back to config if DB is empty)."""
+    from app.models.stock import Stock
+    from sqlalchemy import select
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(Stock.ticker).where(Stock.is_active == True))  # noqa: E712
+        tickers = [row[0] for row in result.fetchall()]
+    return tickers or settings.WATCH_TICKERS
 
-    if not is_market_hours():
-        return
+
+async def job_fetch_options():
+    """Fetch options during market hours (every hour) + once at 4:30 PM close snapshot."""
+    from app.data.fetchers.options_fetcher import fetch_and_store_options
+
+    tickers = await _get_active_tickers()
     async with AsyncSessionLocal() as db:
         try:
-            await fetch_and_store_options(settings.WATCH_TICKERS, db)
+            await fetch_and_store_options(tickers, db)
         except Exception as exc:
             logger.error("Options fetch failed: %s", exc)
 
@@ -75,9 +84,10 @@ async def job_fetch_options():
 async def job_fetch_earnings():
     from app.data.fetchers.sec_fetcher import fetch_and_store_earnings_calendar
 
+    tickers = await _get_active_tickers()
     async with AsyncSessionLocal() as db:
         try:
-            await fetch_and_store_earnings_calendar(settings.WATCH_TICKERS, db)
+            await fetch_and_store_earnings_calendar(tickers, db)
         except Exception as exc:
             logger.error("Earnings calendar fetch failed: %s", exc)
 
@@ -108,11 +118,17 @@ def start_scheduler():
         replace_existing=True,
     )
 
-    # Options: every hour, market hours
+    # Options: every hour during market hours + 4:30 PM closing snapshot
     scheduler.add_job(
         job_fetch_options,
         CronTrigger(minute=0, hour="9-16", day_of_week="mon-fri"),
         id="fetch_options",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        job_fetch_options,
+        CronTrigger(hour=16, minute=30, day_of_week="mon-fri"),
+        id="fetch_options_close",
         replace_existing=True,
     )
 

@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useMacroLatest } from '../hooks/useMacro'
 import { useNews, useRefreshNews } from '../hooks/useNews'
 import { useStockList, useStockSummary } from '../hooks/useStock'
+import { useGlobalStore } from '../store/globalStore'
 import NewsCard from '../components/cards/NewsCard'
 import MacroCard from '../components/cards/MacroCard'
 import clsx from 'clsx'
@@ -11,28 +13,41 @@ const STATIC_TAGS = ['FED', 'MACRO', 'SEMI', 'TECH']
 
 function StockSummaryRow({ ticker }) {
   const { data } = useStockSummary(ticker)
-  if (!data) return null
+  const navigate = useNavigate()
+  const setSelectedTicker = useGlobalStore((s) => s.setSelectedTicker)
+
+  const handleClick = () => {
+    setSelectedTicker(ticker)
+    navigate('/research')
+  }
+
+  if (!data) return (
+    <div className="card h-12 animate-pulse" />
+  )
 
   const change = data.price_change_pct
   const positive = change > 0
 
   return (
-    <div className="card flex items-center justify-between hover:border-surface-500 transition-colors">
-      <div>
-        <span className="font-medium text-accent-blue">${data.ticker}</span>
-        {data.name && <span className="text-gray-400 text-xs ml-2">{data.name}</span>}
+    <button
+      onClick={handleClick}
+      className="card flex items-center justify-between hover:border-accent-blue/50 hover:bg-surface-700/50 transition-all cursor-pointer w-full text-left group"
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="font-medium text-accent-blue group-hover:text-accent-blue/80">${data.ticker}</span>
+        {data.name && <span className="text-gray-400 text-xs truncate hidden sm:inline">{data.name}</span>}
       </div>
-      <div className="flex items-center gap-4 text-sm">
+      <div className="flex items-center gap-3 text-sm shrink-0">
         {data.latest_price && (
           <span className="font-medium">${parseFloat(data.latest_price).toFixed(2)}</span>
         )}
         {change != null && (
-          <span className={positive ? 'positive' : 'negative'}>
+          <span className={clsx('text-sm font-medium w-16 text-right', positive ? 'positive' : 'negative')}>
             {positive ? '+' : ''}{change.toFixed(2)}%
           </span>
         )}
         {data.rsi_14 && (
-          <span className={clsx('text-xs', {
+          <span className={clsx('text-xs w-14 text-right hidden md:inline', {
             'text-accent-red': data.rsi_14 > 70,
             'text-accent-green': data.rsi_14 < 30,
             'text-gray-400': data.rsi_14 >= 30 && data.rsi_14 <= 70,
@@ -40,11 +55,9 @@ function StockSummaryRow({ ticker }) {
             RSI {parseFloat(data.rsi_14).toFixed(0)}
           </span>
         )}
-        {data.supply_chain_layer && (
-          <span className="text-xs text-gray-500">{data.supply_chain_layer}</span>
-        )}
+        <span className="text-gray-600 group-hover:text-gray-400 text-xs">→</span>
       </div>
-    </div>
+    </button>
   )
 }
 

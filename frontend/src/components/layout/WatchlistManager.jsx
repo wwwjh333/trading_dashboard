@@ -11,6 +11,7 @@ export default function WatchlistManager({ onClose }) {
   const [newTicker, setNewTicker] = useState('')
   const [adding, setAdding] = useState(false)
   const [error, setError] = useState('')
+  const [addedTicker, setAddedTicker] = useState('')
 
   const add = async (e) => {
     e.preventDefault()
@@ -18,10 +19,18 @@ export default function WatchlistManager({ onClose }) {
     if (!ticker) return
     setAdding(true)
     setError('')
+    setAddedTicker('')
     try {
       await stocksApi.addStock({ ticker, name: null, sector: null, supply_chain_layer: null })
       qc.invalidateQueries({ queryKey: ['stocks'] })
       setNewTicker('')
+      setAddedTicker(ticker)
+      // Invalidate after backend background fetch + LLM analysis finishes
+      setTimeout(() => {
+        qc.invalidateQueries({ queryKey: ['price'] })
+        qc.invalidateQueries({ queryKey: ['news'] })
+        qc.invalidateQueries({ queryKey: ['summary'] })
+      }, 35000)
     } catch (err) {
       setError(err.response?.data?.detail ?? t('watchlist.addError'))
     } finally {
@@ -59,6 +68,11 @@ export default function WatchlistManager({ onClose }) {
         </button>
       </form>
       {error && <p className="text-accent-red text-xs">{error}</p>}
+      {addedTicker && (
+        <p className="text-accent-green text-xs">
+          ✓ {addedTicker} 已添加，正在后台抓取价格、新闻并分析，约 30 秒后数据可见
+        </p>
+      )}
 
       <div className="space-y-1 max-h-60 overflow-y-auto">
         {isLoading && <div className="text-gray-500 text-xs">{t('common.loading')}</div>}

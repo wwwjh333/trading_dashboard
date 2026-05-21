@@ -17,6 +17,7 @@ async def initial_data_fetch():
     from app.data.fetchers.yfinance_fetcher import fetch_and_store_prices
     from app.data.fetchers.fred_fetcher import fetch_and_store_macro
     from app.data.fetchers.news_fetcher import fetch_and_store_news
+    from app.data.fetchers.options_fetcher import fetch_and_store_options
     from app.models.stock import Stock
     from sqlalchemy import text, select
     from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -77,6 +78,17 @@ async def initial_data_fetch():
             logger.info("新闻数据拉取完成")
         except Exception as exc:
             logger.error("新闻数据拉取失败: %s", exc)
+
+    # 4. 期权数据（启动时无论市场是否开盘都抓一次，用 DB 里的动态 watchlist）
+    async with AsyncSessionLocal() as db:
+        try:
+            result = await db.execute(select(Stock).where(Stock.is_active == True))  # noqa: E712
+            db_tickers = [s.ticker for s in result.scalars().all()]
+            tickers_to_fetch = db_tickers or settings.WATCH_TICKERS
+            await fetch_and_store_options(tickers_to_fetch, db)
+            logger.info("期权数据拉取完成")
+        except Exception as exc:
+            logger.error("期权数据拉取失败: %s", exc)
 
 
 @asynccontextmanager
