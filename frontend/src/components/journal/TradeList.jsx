@@ -142,15 +142,26 @@ function TradeRow({ trade }) {
   )
 }
 
+const PAGE_SIZE = 20
+
 export default function TradeList({ trades = [] }) {
   const { t } = useTranslation()
   const [filter, setFilter] = useState('all')
+  const [page, setPage] = useState(0)
 
   const filtered = trades.filter((tr) => {
     if (filter === 'open') return !tr.exit_date
     if (filter === 'closed') return !!tr.exit_date
     return true
   })
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
+  function handleFilterChange(f) {
+    setFilter(f)
+    setPage(0)
+  }
 
   const FILTER_OPTIONS = [
     ['all', t('common.all')],
@@ -164,7 +175,7 @@ export default function TradeList({ trades = [] }) {
         {FILTER_OPTIONS.map(([v, l]) => (
           <button
             key={v}
-            onClick={() => setFilter(v)}
+            onClick={() => handleFilterChange(v)}
             className={clsx('text-xs px-3 py-1.5 rounded-md border', {
               'bg-accent-blue text-surface-900 border-accent-blue': filter === v,
               'bg-surface-700 text-gray-400 border-surface-600': filter !== v,
@@ -174,10 +185,33 @@ export default function TradeList({ trades = [] }) {
           </button>
         ))}
       </div>
-      {filtered.length === 0 ? (
+
+      {paginated.length === 0 ? (
         <div className="text-gray-500 text-sm text-center py-8">{t('trades.noTrades')}</div>
       ) : (
-        filtered.map((tr) => <TradeRow key={tr.id} trade={tr} />)
+        paginated.map((tr) => <TradeRow key={tr.id} trade={tr} />)
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 pt-1">
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 0}
+            className="btn-secondary text-xs px-3 py-1 disabled:opacity-30"
+          >
+            ←
+          </button>
+          <span className="text-xs text-gray-400">
+            {t('common.pageOf', { current: page + 1, total: totalPages })}
+          </span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= totalPages - 1}
+            className="btn-secondary text-xs px-3 py-1 disabled:opacity-30"
+          >
+            →
+          </button>
+        </div>
       )}
     </div>
   )

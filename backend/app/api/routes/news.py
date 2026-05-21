@@ -16,6 +16,7 @@ router = APIRouter()
 async def get_latest_news(
     ticker: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     _: object = Depends(get_current_user),
 ):
@@ -28,14 +29,10 @@ async def get_latest_news(
         (News.impact_level == 'low',    3),
         else_=4,
     )
-    query = (
-        select(News)
-        .where(News.llm_processed == True)  # noqa: E712
-        .order_by(recency_order, impact_order, News.published_at.desc())
-        .limit(limit)
-    )
+    query = select(News).where(News.llm_processed == True)  # noqa: E712
     if ticker:
         query = query.where(News.ticker == ticker.upper())
+    query = query.order_by(recency_order, impact_order, News.published_at.desc()).limit(limit).offset(offset)
     result = await db.execute(query)
     return result.scalars().all()
 

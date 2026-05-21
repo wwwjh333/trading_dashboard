@@ -26,7 +26,13 @@
     "signOut": "退出登录",
     "operationFailed": "操作失败，请重试",
     "all": "全部",
-    "none": "无"
+    "none": "无",
+    "error": "出现错误",
+    "errorDetail": "该区块加载失败，请重试",
+    "retry": "重试",
+    "loadMore": "加载更多",
+    "loadingMore": "加载中…",
+    "pageOf": "第 {{current}} / {{total}} 页"
   },
   "nav": {
     "overview": "每日概览",

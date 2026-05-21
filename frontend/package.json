@@ -20,7 +20,6 @@
     "react-hook-form": "^7.52.1",
     "react-i18next": "^17.0.8",
     "react-router-dom": "^6.24.0",
-    "lightweight-charts": "^4.2.0",
     "recharts": "^2.12.7",
     "zustand": "^4.5.4"
   },

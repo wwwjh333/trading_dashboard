@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import TabNav from './components/layout/TabNav'
 import MacroBar from './components/layout/MacroBar'
+import ErrorBoundary from './components/layout/ErrorBoundary'
 import DailyOverview from './pages/DailyOverview'
 import StockResearch from './pages/StockResearch'
 import IndustryView from './pages/IndustryView'
@@ -17,11 +18,11 @@ function ProtectedLayout() {
       <TabNav />
       <main className="flex-1 px-4 py-5 max-w-screen-2xl mx-auto w-full">
         <Routes>
-          <Route path="/" element={<DailyOverview />} />
-          <Route path="/research" element={<StockResearch />} />
-          <Route path="/industry" element={<IndustryView />} />
-          <Route path="/catalysts" element={<CatalystView />} />
-          <Route path="/journal" element={<Journal />} />
+          <Route path="/" element={<ErrorBoundary><DailyOverview /></ErrorBoundary>} />
+          <Route path="/research" element={<ErrorBoundary><StockResearch /></ErrorBoundary>} />
+          <Route path="/industry" element={<ErrorBoundary><IndustryView /></ErrorBoundary>} />
+          <Route path="/catalysts" element={<ErrorBoundary><CatalystView /></ErrorBoundary>} />
+          <Route path="/journal" element={<ErrorBoundary><Journal /></ErrorBoundary>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

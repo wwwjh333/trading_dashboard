@@ -26,7 +26,13 @@
     "signOut": "Sign out",
     "operationFailed": "Operation failed, please try again",
     "all": "All",
-    "none": "None"
+    "none": "None",
+    "error": "Something went wrong",
+    "errorDetail": "Failed to load this section — please try again",
+    "retry": "Try again",
+    "loadMore": "Load more",
+    "loadingMore": "Loading…",
+    "pageOf": "Page {{current}} of {{total}}"
   },
   "nav": {
     "overview": "Daily Overview",

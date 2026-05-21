@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMacroLatest } from '../hooks/useMacro'
-import { useNews, useRefreshNews } from '../hooks/useNews'
+import { useInfiniteNews, useRefreshNews } from '../hooks/useNews'
 import { useStockList, useStockSummary } from '../hooks/useStock'
 import { useGlobalStore } from '../store/globalStore'
 import NewsCard from '../components/cards/NewsCard'
@@ -67,15 +67,20 @@ export default function DailyOverview() {
   const { t } = useTranslation()
   const { data: macro } = useMacroLatest()
   const [newsFilter, setNewsFilter] = useState('all')
-  const { data: news, isLoading: newsLoading } = useNews(null, 100)
+  const {
+    data: newsPages,
+    isLoading: newsLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteNews(null)
   const { data: stocks, isLoading: stocksLoading } = useStockList()
   const refreshNews = useRefreshNews()
 
   const activeTickers = (stocks ?? []).filter((s) => s.is_active).map((s) => s.ticker)
-  const allNews = news ?? []
+  const allNews = newsPages?.pages.flat() ?? []
   const filteredNews = newsFilter === 'all' ? allNews : allNews.filter((n) => n.ticker === newsFilter)
   const highImpact = allNews.filter((n) => n.impact_level === 'high').slice(0, 3)
-  const recentNews = filteredNews.slice(0, 20)
 
   return (
     <div className="space-y-6">
@@ -155,10 +160,19 @@ export default function DailyOverview() {
           <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="card h-16 animate-pulse" />)}</div>
         ) : (
           <div className="space-y-2">
-            {recentNews.length > 0
-              ? recentNews.map((n) => <NewsCard key={n.id} item={n} />)
+            {filteredNews.length > 0
+              ? filteredNews.map((n) => <NewsCard key={n.id} item={n} />)
               : <p className="text-gray-500 text-sm py-4 text-center">{t('overview.noNewsInCategory')}</p>
             }
+            {hasNextPage && (
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="w-full text-center text-xs text-gray-500 hover:text-gray-300 py-3 border border-dashed border-surface-600 rounded-lg mt-1 transition-colors disabled:opacity-40"
+              >
+                {isFetchingNextPage ? t('common.loadingMore') : t('common.loadMore')}
+              </button>
+            )}
           </div>
         )}
       </section>
