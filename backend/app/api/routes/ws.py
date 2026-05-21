@@ -22,7 +22,12 @@ async def price_stream(websocket: WebSocket, ticker: str) -> None:
 
     if not is_market_hours():
         await websocket.send_json({"type": "closed", "msg": "Market is closed"})
-        await websocket.close()
+        # Keep connection open so browser doesn't report handshake failure
+        try:
+            while True:
+                await asyncio.wait_for(websocket.receive_text(), timeout=30)
+        except (asyncio.TimeoutError, WebSocketDisconnect, Exception):
+            pass
         return
 
     queue: asyncio.Queue = asyncio.Queue(maxsize=200)
