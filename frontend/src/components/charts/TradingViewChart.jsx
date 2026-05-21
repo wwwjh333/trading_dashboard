@@ -1,56 +1,67 @@
 import { useEffect, useRef, memo } from 'react'
 import { useThemeStore } from '../../store/globalStore'
 
-const CHART_HEIGHT = 620
+const CHART_HEIGHT = 680
+
+function buildWidgetConfig(ticker, theme) {
+  return {
+    autosize: true,
+    symbol: ticker,
+    interval: 'D',
+    timezone: 'America/New_York',
+    theme: theme === 'light' ? 'light' : 'dark',
+    style: '1',
+    locale: 'zh_CN',
+    enable_publishing: false,
+    allow_symbol_change: false,
+    calendar: false,
+    support_host: 'https://www.tradingview.com',
+    // 顶部工具栏：周期(1m/5m/1D…)、K线类型、指标
+    hide_top_toolbar: false,
+    // 左侧画线工具
+    hide_side_toolbar: false,
+    hide_legend: false,
+    save_image: false,
+    // 底部日期范围：1D / 5D / 1M / 3M / 6M / YTD / 1Y / 5Y / All
+    withdateranges: true,
+    range: '6M',
+    details: false,
+    hotlist: false,
+    studies: [],
+  }
+}
 
 function TradingViewChart({ ticker }) {
   const containerRef = useRef(null)
   const { theme } = useThemeStore()
 
   useEffect(() => {
-    if (!ticker || !containerRef.current) return
+    const el = containerRef.current
+    if (!ticker || !el) return
 
-    containerRef.current.innerHTML = ''
+    el.innerHTML = ''
 
-    const containerId = `tv_${ticker}_${Date.now()}`
-    const div = document.createElement('div')
-    div.id = containerId
-    containerRef.current.appendChild(div)
+    const wrapper = document.createElement('div')
+    wrapper.className = 'tradingview-widget-container'
+    wrapper.style.height = `${CHART_HEIGHT}px`
+    wrapper.style.width = '100%'
+
+    const widget = document.createElement('div')
+    widget.className = 'tradingview-widget-container__widget'
+    widget.style.height = '100%'
+    widget.style.width = '100%'
 
     const script = document.createElement('script')
-    script.src = 'https://s3.tradingview.com/tv.js'
+    script.type = 'text/javascript'
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
     script.async = true
-    script.onload = () => {
-      if (!window.TradingView) return
-      new window.TradingView.widget({
-        container_id: containerId,
-        width: '100%',
-        height: CHART_HEIGHT,
-        symbol: ticker,
-        interval: 'D',
-        timezone: 'America/New_York',
-        theme: theme === 'light' ? 'light' : 'dark',
-        style: '1',
-        locale: 'en',
-        toolbar_bg: theme === 'light' ? '#f8f9fa' : '#1a1d27',
-        enable_publishing: false,
-        withdateranges: true,
-        hide_side_toolbar: false,
-        allow_symbol_change: false,
-        save_image: false,
-        studies: ['Volume@tv-basicstudies'],
-        overrides: {
-          'paneProperties.background': theme === 'light' ? '#ffffff' : '#13151f',
-          'paneProperties.backgroundType': 'solid',
-          'scalesProperties.textColor': theme === 'light' ? '#374151' : '#9ca3af',
-        },
-      })
-    }
-    containerRef.current.appendChild(script)
+    script.innerHTML = JSON.stringify(buildWidgetConfig(ticker, theme))
 
-    return () => {
-      if (containerRef.current) containerRef.current.innerHTML = ''
-    }
+    wrapper.appendChild(widget)
+    wrapper.appendChild(script)
+    el.appendChild(wrapper)
+
+    return () => { el.innerHTML = '' }
   }, [ticker, theme])
 
   return (

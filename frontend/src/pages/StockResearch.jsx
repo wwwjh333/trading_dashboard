@@ -1,7 +1,7 @@
 import { useGlobalStore } from '../store/globalStore'
 import { useStockList, useStockSummary } from '../hooks/useStock'
 import { useNews } from '../hooks/useNews'
-import LightweightChart from '../components/charts/LightweightChart'
+import TradingViewChart from '../components/charts/TradingViewChart'
 import OptionsCard from '../components/cards/OptionsCard'
 import NewsCard from '../components/cards/NewsCard'
 import StockSearchBox from '../components/layout/StockSearchBox'
@@ -86,7 +86,7 @@ export default function StockResearch() {
 
         {/* Full-width chart — time range via TradingView toolbar */}
         <div className="card !p-0 overflow-hidden">
-          <LightweightChart ticker={selectedTicker} />
+          <TradingViewChart ticker={selectedTicker} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
