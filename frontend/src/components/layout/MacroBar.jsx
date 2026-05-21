@@ -36,16 +36,12 @@ function saveSelected(ids) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
 }
 
-const INVERT_SIGN = new Set(['DGS10', 'DGS2', 'DGS1', 'FEDFUNDS', 'DFII10', 'VIXCLS', 'DXY', 'MOVE'])
-
 function MacroTicker({ item, label }) {
   const isLargeNum = ['SOX', 'NDX', 'SPY', 'QQQ'].includes(item.indicator)
   const val    = item.value?.toFixed(isLargeNum ? 0 : 2) ?? '--'
   const change = item.change
   const positive = change > 0
   const negative = change < 0
-  const isGood = INVERT_SIGN.has(item.indicator) ? negative : positive
-  const isBad  = INVERT_SIGN.has(item.indicator) ? positive : negative
 
   return (
     <div className="flex items-center gap-1.5 px-3 border-r border-surface-600 last:border-0 flex-shrink-0 h-8">
@@ -53,7 +49,7 @@ function MacroTicker({ item, label }) {
       <span className="font-mono font-medium text-gray-200" style={{ fontSize: 11 }}>{val}</span>
       {change != null && (
         <span
-          className={clsx('font-mono', { 'text-accent-green': isGood, 'text-accent-red': isBad, 'text-gray-500': !isGood && !isBad })}
+          className={clsx('font-mono', { 'text-accent-green': positive, 'text-accent-red': negative, 'text-gray-500': !positive && !negative })}
           style={{ fontSize: 10 }}
         >
           {positive ? '+' : ''}{change.toFixed(2)}

@@ -32,11 +32,9 @@ export default function MacroCard({ indicator, latestValue, change }) {
 
   const isPositive = change > 0
   const isNegative = change < 0
-  const isGood = meta.inverse ? isNegative : isPositive
-  const isBad  = meta.inverse ? isPositive : isNegative
 
-  const changeColor = isGood ? ct.green : isBad ? ct.red : ct.textColor
-  const lineColor   = isGood ? ct.green : isBad ? ct.red : ct.blue
+  const changeColor = isPositive ? ct.green : isNegative ? ct.red : ct.textColor
+  const lineColor   = isPositive ? ct.green : isNegative ? ct.red : ct.blue
 
   return (
     <div className="card space-y-2 hover:shadow-card-md transition-shadow">
