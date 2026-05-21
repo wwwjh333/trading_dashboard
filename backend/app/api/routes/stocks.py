@@ -23,53 +23,108 @@ from app.data.processors.llm_processor import process_news_batch
 
 logger = logging.getLogger(__name__)
 
+YAHOO_SEARCH_URL = "https://query1.finance.yahoo.com/v1/finance/search"
+YAHOO_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+ALLOWED_QUOTE_TYPES = {"EQUITY", "ETF", "INDEX", "MUTUALFUND"}
+
+
+def _normalize_search_results(quotes: list) -> List[dict]:
+    """Parse Yahoo/yfinance quote list into unified search results."""
+    results: List[dict] = []
+    seen: set[str] = set()
+    for quote in quotes:
+        symbol = (quote.get("symbol") or "").strip().upper()
+        if not symbol or symbol in seen:
+            continue
+        qtype = (quote.get("quoteType") or quote.get("typeDisp") or "").upper()
+        type_disp = (quote.get("typeDisp") or "").lower()
+        if qtype not in ALLOWED_QUOTE_TYPES and type_disp not in ("equity", "etf", "index", "mutualfund"):
+            continue
+        seen.add(symbol)
+        results.append({
+            "ticker": symbol,
+            "name": quote.get("longname") or quote.get("shortname") or "",
+            "exchange": quote.get("exchange") or quote.get("exchDisp") or "",
+            "type": qtype or type_disp.upper(),
+        })
+    return results[:12]
+
+
+def _search_yfinance_sync(query: str) -> List[dict]:
+    try:
+        from yfinance import Search
+        search = Search(query, max_results=12)
+        quotes = getattr(search, "quotes", None) or []
+        return _normalize_search_results(quotes)
+    except Exception as exc:
+        logger.warning("yfinance Search fallback failed for %r: %s", query, exc)
+        return []
+
+
+async def _search_stocks(query: str) -> List[dict]:
+    params = {"q": query, "quotesCount": 12, "newsCount": 0, "listsCount": 0}
+    try:
+        async with httpx.AsyncClient(timeout=8, follow_redirects=True) as client:
+            r = await client.get(YAHOO_SEARCH_URL, params=params, headers=YAHOO_HEADERS)
+            if r.status_code == 200:
+                data = r.json()
+                results = _normalize_search_results(data.get("quotes", []))
+                if results:
+                    return results
+            else:
+                logger.warning("Yahoo search HTTP %s for %r", r.status_code, query)
+    except Exception as exc:
+        logger.warning("Yahoo search failed for %r: %s", query, exc)
+
+    return await asyncio.to_thread(_search_yfinance_sync, query)
+
+
 router = APIRouter()
 
 
-# ── Stock search ─────────────────────────────────────────────────────────────
+# ── Stock search (must stay above /{ticker} routes) ───────────────────────────
 
 @router.get("/search")
 async def search_stocks(
     q: str = Query(..., min_length=1, max_length=30),
     _: User = Depends(get_current_user),
 ):
-    """Fuzzy search via Yahoo Finance — returns list of {ticker, name, exchange, type}."""
-    url = "https://query1.finance.yahoo.com/v1/finance/search"
-    params = {"q": q, "quotesCount": 10, "newsCount": 0, "listsCount": 0}
-    headers = {"User-Agent": "Mozilla/5.0"}
-    try:
-        async with httpx.AsyncClient(timeout=5) as client:
-            r = await client.get(url, params=params, headers=headers)
-            r.raise_for_status()
-            data = r.json()
-        quotes = data.get("quotes", [])
-        results = [
-            {
-                "ticker":   q.get("symbol", ""),
-                "name":     q.get("longname") or q.get("shortname") or "",
-                "exchange": q.get("exchange", ""),
-                "type":     q.get("quoteType", ""),
-            }
-            for q in quotes
-            if q.get("symbol") and q.get("quoteType") in ("EQUITY", "ETF", "INDEX")
-        ]
-        return results
-    except Exception as exc:
-        logger.error("Stock search failed for %r: %s", q, exc)
+    query = q.strip()
+    if not query:
         return []
+    return await _search_stocks(query)
 
 
 # ── yfinance validation ───────────────────────────────────────────────────────
 
 def _get_yf_info(ticker: str) -> dict:
+    """Validate ticker and fetch metadata via yfinance."""
     try:
         tk = yf.Ticker(ticker)
         info = tk.fast_info
-        name = getattr(info, "long_name", None) or ticker
+        name = getattr(info, "long_name", None) or getattr(info, "short_name", None) or ticker
         sector = getattr(info, "sector", None)
-        price = getattr(info, "last_price", None) or getattr(info, "regularMarketPrice", None)
-        return {"valid": price is not None, "name": name, "sector": sector}
-    except Exception:
+
+        price = getattr(info, "last_price", None)
+        if price is not None:
+            return {"valid": True, "name": name, "sector": sector}
+
+        # fast_info may miss price for some ETFs — fall back to recent history
+        hist = tk.history(period="5d")
+        if hist is not None and not hist.empty:
+            return {"valid": True, "name": name, "sector": sector}
+
+        return {"valid": False, "name": name, "sector": sector}
+    except Exception as exc:
+        logger.warning("yfinance validation failed for %s: %s", ticker, exc)
         return {"valid": False, "name": ticker, "sector": None}
 
 

@@ -3,6 +3,7 @@ import { useStockList } from '../../hooks/useStock'
 import { stocksApi } from '../../api/index'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import StockSearchBox from './StockSearchBox'
 
 export default function WatchlistManager({ onClose }) {
   const { t } = useTranslation()
@@ -13,19 +14,17 @@ export default function WatchlistManager({ onClose }) {
   const [error, setError] = useState('')
   const [addedTicker, setAddedTicker] = useState('')
 
-  const add = async (e) => {
-    e.preventDefault()
-    const ticker = newTicker.trim().toUpperCase()
-    if (!ticker) return
+  const addTicker = async (ticker) => {
+    const code = ticker.trim().toUpperCase()
+    if (!code || adding) return
     setAdding(true)
     setError('')
     setAddedTicker('')
     try {
-      await stocksApi.addStock({ ticker, name: null, sector: null, supply_chain_layer: null })
+      await stocksApi.addStock({ ticker: code, name: null, sector: null, supply_chain_layer: null })
       qc.invalidateQueries({ queryKey: ['stocks'] })
       setNewTicker('')
-      setAddedTicker(ticker)
-      // Invalidate after backend background fetch + LLM analysis finishes
+      setAddedTicker(code)
       setTimeout(() => {
         qc.invalidateQueries({ queryKey: ['price'] })
         qc.invalidateQueries({ queryKey: ['news'] })
@@ -38,21 +37,39 @@ export default function WatchlistManager({ onClose }) {
     }
   }
 
+  const add = async (e) => {
+    e.preventDefault()
+    await addTicker(newTicker)
+  }
+
   const remove = async (ticker) => {
     if (!confirm(t('watchlist.confirmRemove', { ticker }))) return
     try {
       await stocksApi.removeStock(ticker)
       qc.invalidateQueries({ queryKey: ['stocks'] })
-    } catch (err) {
+    } catch {
       alert(t('watchlist.removeError'))
     }
   }
 
   return (
-    <div className="absolute top-full right-0 mt-1 w-72 bg-surface-800 border border-surface-600 rounded-lg shadow-xl z-50 p-4 space-y-3">
+    <div className="absolute top-full right-0 mt-1 w-80 bg-surface-800 border border-surface-600 rounded-lg shadow-xl z-50 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">{t('watchlist.title')}</h3>
         <button onClick={onClose} className="text-gray-500 hover:text-gray-300 text-xs">✕</button>
+      </div>
+
+      {/* Fuzzy search — click result to add directly */}
+      <StockSearchBox
+        placeholder="搜索并添加，如 QQQM / Nvidia"
+        onSelect={(ticker) => addTicker(ticker)}
+        inputClassName="input-field py-1.5 text-xs w-full"
+      />
+
+      <div className="flex items-center gap-2 text-xs text-gray-600">
+        <span className="flex-1 border-t border-surface-600" />
+        <span>或直接输入代码</span>
+        <span className="flex-1 border-t border-surface-600" />
       </div>
 
       <form onSubmit={add} className="flex gap-2">
@@ -61,16 +78,17 @@ export default function WatchlistManager({ onClose }) {
           onChange={(e) => setNewTicker(e.target.value.toUpperCase())}
           placeholder={t('watchlist.placeholder')}
           className="input-field flex-1 py-1 text-xs uppercase"
-          maxLength={10}
+          maxLength={12}
         />
         <button type="submit" disabled={adding} className="btn-primary text-xs py-1 px-3">
           {adding ? '…' : t('common.add')}
         </button>
       </form>
+
       {error && <p className="text-accent-red text-xs">{error}</p>}
       {addedTicker && (
         <p className="text-accent-green text-xs">
-          ✓ {addedTicker} 已添加，正在后台抓取价格、新闻并分析，约 30 秒后数据可见
+          ✓ {addedTicker} 已添加，正在后台抓取数据，约 30 秒后可见
         </p>
       )}
 
@@ -78,13 +96,13 @@ export default function WatchlistManager({ onClose }) {
         {isLoading && <div className="text-gray-500 text-xs">{t('common.loading')}</div>}
         {(stocks ?? []).map((s) => (
           <div key={s.ticker} className="flex items-center justify-between py-1 px-2 rounded hover:bg-surface-700">
-            <div>
+            <div className="min-w-0">
               <span className="text-sm text-accent-blue font-medium">${s.ticker}</span>
-              {s.name && <span className="text-xs text-gray-400 ml-2">{s.name}</span>}
+              {s.name && <span className="text-xs text-gray-400 ml-2 truncate">{s.name}</span>}
             </div>
             <button
               onClick={() => remove(s.ticker)}
-              className="text-gray-600 hover:text-accent-red text-xs"
+              className="text-gray-600 hover:text-accent-red text-xs shrink-0 ml-2"
             >
               {t('common.remove')}
             </button>
