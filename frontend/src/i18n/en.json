@@ -1,0 +1,104 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "noData": "No data available",
+    "add": "Add",
+    "remove": "Remove",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "days": "d",
+    "refreshing": "Refreshing…",
+    "search": "Search"
+  },
+  "nav": {
+    "overview": "Daily Overview",
+    "research": "Research",
+    "news": "News",
+    "catalyst": "Catalysts",
+    "industry": "Industry",
+    "trades": "Trade Log",
+    "settings": "Settings"
+  },
+  "auth": {
+    "title": "Trading Dashboard",
+    "subtitle": "Personal Trading Research Platform",
+    "login": "Login",
+    "register": "Register",
+    "username": "Username",
+    "password": "Password",
+    "email": "Email (optional)",
+    "loginBtn": "Sign in",
+    "registerBtn": "Create account",
+    "switchToRegister": "No account? Register",
+    "switchToLogin": "Have an account? Login"
+  },
+  "overview": {
+    "macroSignals": "Macro Signals",
+    "majorNews": "Major Events",
+    "watchlist": "Watchlist",
+    "newsFeed": "News Feed",
+    "refreshNews": "Refresh News",
+    "emptyWatchlist": "Watchlist is empty — add stocks in Settings"
+  },
+  "research": {
+    "searchTicker": "Ticker",
+    "priceChart": "Price Chart",
+    "technicals": "Technical Indicators",
+    "relatedNews": "Related News"
+  },
+  "macro": {
+    "signals": "Macro",
+    "configure": "Configure indicators",
+    "configTitle": "Select macro indicators to display",
+    "noneSelected": "No indicators selected",
+    "reset": "Reset to default"
+  },
+  "watchlist": {
+    "title": "Watchlist Manager",
+    "placeholder": "Ticker",
+    "empty": "No stocks in watchlist",
+    "addError": "Failed to add stock",
+    "removeError": "Failed to remove stock",
+    "confirmRemove": "Remove {{ticker}} from watchlist?"
+  },
+  "basket": {
+    "title": "Thematic Baskets",
+    "new": "New",
+    "namePlaceholder": "Basket name",
+    "empty": "No baskets yet — click New to create one",
+    "selectPrompt": "Select or create a basket",
+    "createFirst": "Create a basket on the left to get started",
+    "confirmDelete": "Delete this basket?"
+  },
+  "industry": {
+    "baskets": "Baskets",
+    "supplychain": "Supply Chain",
+    "capex": "Capex",
+    "supplychainTitle": "Supply Chain Map",
+    "capexTitle": "Major Company Capex Tracker",
+    "capexSubtitle": "Billions USD, by quarter"
+  },
+  "news": {
+    "title": "News Center",
+    "filterAll": "All",
+    "filterHigh": "High Impact",
+    "noNews": "No news available"
+  },
+  "catalyst": {
+    "title": "Catalyst Calendar",
+    "add": "Add Catalyst",
+    "confirm": "Submit Catalyst Confirmation"
+  },
+  "trades": {
+    "title": "Trade Journal",
+    "add": "New Trade",
+    "edit": "Edit Trade",
+    "stats": "Stats",
+    "totalPnl": "Total P&L",
+    "winRate": "Win Rate",
+    "avgPnl": "Avg P&L"
+  }
+}

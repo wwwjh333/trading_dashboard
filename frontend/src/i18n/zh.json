@@ -1,0 +1,104 @@
+{
+  "common": {
+    "loading": "加载中…",
+    "noData": "暂无数据",
+    "add": "添加",
+    "remove": "删除",
+    "save": "保存",
+    "cancel": "取消",
+    "edit": "编辑",
+    "delete": "删除",
+    "confirm": "确认",
+    "days": "天",
+    "refreshing": "刷新中…",
+    "search": "搜索"
+  },
+  "nav": {
+    "overview": "每日概览",
+    "research": "个股研究",
+    "news": "新闻",
+    "catalyst": "催化剂",
+    "industry": "行业全景",
+    "trades": "交易日志",
+    "settings": "设置"
+  },
+  "auth": {
+    "title": "Trading Dashboard",
+    "subtitle": "个人交易研究平台",
+    "login": "登录",
+    "register": "注册",
+    "username": "用户名",
+    "password": "密码",
+    "email": "邮箱（可选）",
+    "loginBtn": "登录",
+    "registerBtn": "注册",
+    "switchToRegister": "还没有账号？注册",
+    "switchToLogin": "已有账号？登录"
+  },
+  "overview": {
+    "macroSignals": "宏观信号",
+    "majorNews": "重要事件",
+    "watchlist": "关注列表",
+    "newsFeed": "新闻动态",
+    "refreshNews": "刷新新闻",
+    "emptyWatchlist": "关注列表为空，请在「设置」中添加股票"
+  },
+  "research": {
+    "searchTicker": "输入代码",
+    "priceChart": "价格走势",
+    "technicals": "技术指标",
+    "relatedNews": "相关新闻"
+  },
+  "macro": {
+    "signals": "宏观",
+    "configure": "配置指标",
+    "configTitle": "选择显示的宏观指标",
+    "noneSelected": "未选择指标",
+    "reset": "恢复默认"
+  },
+  "watchlist": {
+    "title": "关注列表管理",
+    "placeholder": "股票代码",
+    "empty": "暂无关注股票",
+    "addError": "添加失败",
+    "removeError": "删除失败",
+    "confirmRemove": "确认删除 {{ticker}}？"
+  },
+  "basket": {
+    "title": "主题篮子",
+    "new": "新建",
+    "namePlaceholder": "篮子名称",
+    "empty": "还没有篮子，点击「新建」创建",
+    "selectPrompt": "请选择或创建一个篮子",
+    "createFirst": "请先在左侧创建一个篮子",
+    "confirmDelete": "确认删除此篮子？"
+  },
+  "industry": {
+    "baskets": "主题篮子",
+    "supplychain": "供应链地图",
+    "capex": "资本支出",
+    "supplychainTitle": "供应链地图",
+    "capexTitle": "主要公司资本支出追踪",
+    "capexSubtitle": "十亿美元，按季度"
+  },
+  "news": {
+    "title": "新闻中心",
+    "filterAll": "全部",
+    "filterHigh": "重要",
+    "noNews": "暂无新闻"
+  },
+  "catalyst": {
+    "title": "催化剂日历",
+    "add": "添加催化剂",
+    "confirm": "催化剂确认提交"
+  },
+  "trades": {
+    "title": "交易日志",
+    "add": "新增交易",
+    "edit": "编辑交易",
+    "stats": "统计",
+    "totalPnl": "总盈亏",
+    "winRate": "胜率",
+    "avgPnl": "平均盈亏"
+  }
+}
